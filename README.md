@@ -1,6 +1,6 @@
 # ThreatLens AI 🛡️
 AI-powered Cybersecurity Log Analyzer (Streamlit)
-
+Live Demo: https://threatlens-ai-2s2j3gzubm5yym63zhbqnr.streamlit.app/#threat-lens-ai
 ## 🚀 What it does
 Upload a `.log` / `.txt` file and ThreatLens detects:
 - Brute Force Attempts
