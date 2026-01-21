@@ -6,6 +6,7 @@ import pandas as pd
 import streamlit as st
 
 st.set_page_config(page_title="ThreatLens AI", layout="wide")
+demo_mode = st.button("⚡ Try Demo Log (No upload needed)")
 
 st.title("🛡️ ThreatLens AI")
 st.write("AI-powered Cybersecurity Log Analyzer (MVP)")
@@ -72,16 +73,22 @@ def risk_color(label: str):
 # -----------------------------
 uploaded_file = st.file_uploader("Upload a log file (.log / .txt)", type=["log", "txt"])
 
-if uploaded_file:
-    content = uploaded_file.read().decode("utf-8", errors="ignore")
-    lines = [ln.strip() for ln in content.splitlines() if ln.strip()]
+log_text = None
 
-    st.subheader("📄 Raw Log Preview")
-    st.code("\n".join(lines[:40]))
+if demo_mode:
+    with open("sample_auth.log", "r", encoding="utf-8", errors="ignore") as f:
+        log_text = f.read()
+    st.info("✅ Demo log loaded: sample_auth.log")
 
+elif uploaded_file:
+    log_text = uploaded_file.read().decode("utf-8", errors="ignore")
+    st.success("✅ File loaded successfully!")
+
+
+if log_text:
     # Parse events
     events = []
-    for idx, line in enumerate(lines):
+    for idx, line in enumerate(log_text.splitlines()):
         ip = extract_ip(line)
         evt = guess_event_type(line)
         endpoint = find_endpoint(line)
