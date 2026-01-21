@@ -1,9 +1,11 @@
+import streamlit as st
+import pandas as pd
 import re
-from collections import defaultdict, Counter
+from collections import defaultdict
 from datetime import datetime
 
-import pandas as pd
-import streamlit as st
+
+
 
 st.set_page_config(page_title="ThreatLens AI", layout="wide")
 demo_mode = st.button("⚡ Try Demo Log (No upload needed)")
