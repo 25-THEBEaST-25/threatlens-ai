@@ -8,7 +8,20 @@ from datetime import datetime
 
 
 st.set_page_config(page_title="ThreatLens AI", layout="wide")
-demo_mode = st.button("⚡ Try Demo Log (No upload needed)")
+
+col1, col2 = st.columns([1, 1])
+
+with col1:
+    demo_clicked = st.button("⚡ Try Demo Log (No upload needed)")
+
+with col2:
+    reset_clicked = st.button("🧹 Reset / Clear")
+
+if reset_clicked:
+    for key in ["log_text", "alerts_df", "filtered_df", "risk_level", "ip_filter"]:
+        if key in st.session_state:
+            del st.session_state[key]
+    st.rerun()
 
 st.title("🛡️ ThreatLens AI")
 st.write("AI-powered Cybersecurity Log Analyzer (MVP)")
@@ -43,8 +56,6 @@ def guess_event_type(line: str):
 
 
 def find_endpoint(line: str):
-    # crude endpoint extraction (works for common web logs)
-    # Example: "GET /admin HTTP/1.1"
     m = re.search(r"(GET|POST|PUT|DELETE|PATCH)\s+(\S+)", line)
     if m:
         return m.group(2)
@@ -77,15 +88,16 @@ uploaded_file = st.file_uploader("Upload a log file (.log / .txt)", type=["log",
 
 log_text = None
 
-if demo_mode:
+if demo_clicked:
     with open("sample_auth.log", "r", encoding="utf-8", errors="ignore") as f:
         log_text = f.read()
+    st.session_state["log_text"] = log_text
     st.info("✅ Demo log loaded: sample_auth.log")
 
 elif uploaded_file:
     log_text = uploaded_file.read().decode("utf-8", errors="ignore")
+    st.session_state["log_text"] = log_text
     st.success("✅ File loaded successfully!")
-
 
 if log_text:
     # Parse events
@@ -125,7 +137,6 @@ if log_text:
                 })
 
     # Rule 2: Credential stuffing (same IP tries multiple usernames)
-    # username extraction (rough): "user=<name>" or "for <name>"
     def extract_username(line: str):
         low = line.lower()
         m1 = re.search(r"user=([a-zA-Z0-9_.-]+)", low)
@@ -168,6 +179,7 @@ if log_text:
                         "evidence": f"{cnt} suspicious endpoint hits (e.g. /admin, ../, /.env)",
                         "score": score
                     })
+
     # -----------------------------
     # Quick Stats (Overview)
     # -----------------------------
@@ -188,9 +200,8 @@ if log_text:
         .reset_index()
     )
     top_ip_df.columns = ["ip", "count"]
-    st.dataframe(top_ip_df, use_container_width=True, hide_index=True)
+    st.dataframe(top_ip_df, width="stretch", hide_index=True)
     st.bar_chart(top_ip_df.set_index("ip"))
-    
 
     # Alerts table
     st.subheader("🚨 Alerts")
@@ -204,16 +215,18 @@ if log_text:
 
         # Sort by score high -> low
         alert_df = alert_df.sort_values(by="score", ascending=False)
-                # -----------------------------
+
+        # -----------------------------
         # Sidebar Filters
         # -----------------------------
         st.sidebar.header("🔎 Filters")
 
         risk_options = ["ALL"] + sorted(alert_df["risk"].unique().tolist())
-        selected_risk = st.sidebar.selectbox("Risk Level", risk_options)
+        selected_risk = st.sidebar.selectbox("Risk Level", risk_options, key="risk_level")
 
-        ip_options = ["ALL"] + sorted(alert_df["ip"].unique().tolist())
-        selected_ip = st.sidebar.selectbox("IP Address", ip_options)
+        unique_ips = sorted(alert_df["ip"].unique().tolist())
+        ip_options = ["ALL"] + unique_ips
+        selected_ip = st.sidebar.selectbox("IP Address", ip_options, key="ip_filter")
 
         filtered_alerts = alert_df.copy()
 
@@ -223,7 +236,6 @@ if log_text:
         if selected_ip != "ALL":
             filtered_alerts = filtered_alerts[filtered_alerts["ip"] == selected_ip]
 
-
         c1, c2, c3 = st.columns(3)
         c1.metric("Total Alerts", len(alert_df))
         c2.metric("High Risk", int((alert_df["risk"] == "HIGH").sum()))
@@ -231,11 +243,27 @@ if log_text:
 
         st.dataframe(
             filtered_alerts[["risk_badge", "type", "ip", "evidence", "score"]],
-            use_container_width=True,
+            width="stretch",
             hide_index=True
         )
 
+        # -----------------------------
+        # AI-style Explanation + Copy
+        # -----------------------------
         st.subheader("🧠 AI-style Explanation (MVP)")
+
+        summary_text = "\n".join([
+            f"[{row['risk_badge']}] {row['type']} | IP: {row['ip']} | Score: {row['score']} | Evidence: {row['evidence']}"
+            for _, row in alert_df.iterrows()
+        ])
+
+        st.code(summary_text)
+        st.download_button(
+            label="📋 Copy Summary to Clipboard",
+            data=summary_text,
+            file_name="alert_summary.txt",
+            mime="text/plain"
+        )
         for _, row in filtered_alerts.iterrows():
             st.markdown(
                 f"""
@@ -245,6 +273,7 @@ if log_text:
 **Suggested action:** Block/Rate-limit the IP, enable account lockout, monitor additional activity.
 """
             )
+
         # -----------------------------
         # Report Download (Markdown)
         # -----------------------------
