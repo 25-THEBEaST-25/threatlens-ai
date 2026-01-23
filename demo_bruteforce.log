@@ -1,0 +1,12 @@
+Jan 23 10:21:01 server sshd[1111]: Failed password for invalid user admin from 45.33.12.9 port 55231 ssh2
+Jan 23 10:21:04 server sshd[1112]: Failed password for invalid user admin from 45.33.12.9 port 55232 ssh2
+Jan 23 10:21:06 server sshd[1113]: Failed password for invalid user root from 45.33.12.9 port 55233 ssh2
+Jan 23 10:21:08 server sshd[1114]: Failed password for invalid user root from 45.33.12.9 port 55234 ssh2
+Jan 23 10:21:10 server sshd[1115]: Failed password for invalid user test from 45.33.12.9 port 55235 ssh2
+Jan 23 10:21:12 server sshd[1116]: Failed password for invalid user test from 45.33.12.9 port 55236 ssh2
+Jan 23 10:21:14 server sshd[1117]: Failed password for invalid user guest from 45.33.12.9 port 55237 ssh2
+Jan 23 10:21:16 server sshd[1118]: Failed password for invalid user guest from 45.33.12.9 port 55238 ssh2
+Jan 23 10:21:18 server sshd[1119]: Failed password for invalid user support from 45.33.12.9 port 55239 ssh2
+Jan 23 10:21:20 server sshd[1120]: Failed password for invalid user support from 45.33.12.9 port 55240 ssh2
+Jan 23 10:21:22 server sshd[1121]: Failed password for invalid user dev from 45.33.12.9 port 55241 ssh2
+Jan 23 10:21:24 server sshd[1122]: Failed password for invalid user dev from 45.33.12.9 port 55242 ssh2
