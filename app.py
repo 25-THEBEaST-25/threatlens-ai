@@ -26,6 +26,7 @@ if reset_clicked:
 st.title("🛡️ ThreatLens AI")
 st.write("AI-powered Cybersecurity Log Analyzer (MVP)")
 st.info("🔒 Privacy note: Your log is processed in-memory for analysis. Avoid uploading sensitive logs containing passwords, tokens, API keys, or private customer data. For maximum privacy, run locally.")
+st.caption("Built by Aryan (Wesu) • ThreatLens AI MVP • Streamlit + Python")
 
 
 # -----------------------------
