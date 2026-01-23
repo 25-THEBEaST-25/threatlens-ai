@@ -207,7 +207,9 @@ if log_text:
     st.bar_chart(top_ip_df.set_index("ip"))
 
     # Alerts table
+    st.markdown('<div id="alerts_section"></div>', unsafe_allow_html=True)
     st.subheader("🚨 Alerts")
+
 
     if not alerts:
         st.success("✅ No high-confidence threats detected (based on current rules).")
@@ -230,6 +232,16 @@ if log_text:
         unique_ips = sorted(alert_df["ip"].unique().tolist())
         ip_options = ["ALL"] + unique_ips
         selected_ip = st.sidebar.selectbox("IP Address", ip_options, key="ip_filter")
+        st.markdown(
+    """
+    <script>
+    const el = window.parent.document.getElementById("alerts_section");
+    if (el) el.scrollIntoView({behavior: "smooth"});
+    </script>
+    """,
+    unsafe_allow_html=True
+)
+
 
         filtered_alerts = alert_df.copy()
 
