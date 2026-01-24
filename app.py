@@ -14,6 +14,10 @@ with col1:
 with col2:
     reset_clicked = st.button("🧹 Reset / Clear")
 
+# ✅ Sidebar Demo Mode Button (NEW)
+st.sidebar.markdown("## 🚀 Quick Demo")
+demo_mode = st.sidebar.button("▶️ Run Demo Mode")
+
 if reset_clicked:
     for key in ["log_text", "alerts_df", "filtered_df", "risk_level", "ip_filter"]:
         if key in st.session_state:
@@ -91,10 +95,17 @@ log_text = None
 if "log_text" in st.session_state:
     log_text = st.session_state["log_text"]
 
-if demo_clicked:
+# ✅ Demo load function (same file for both demo buttons)
+def load_demo_log():
     with open("sample_auth.log", "r", encoding="utf-8", errors="ignore") as f:
-        log_text = f.read()
-    st.session_state["log_text"] = log_text
+        demo_text = f.read()
+    st.session_state["log_text"] = demo_text
+    return demo_text
+
+
+# ✅ If any demo button is clicked → load demo log
+if demo_clicked or demo_mode:
+    log_text = load_demo_log()
     st.info("✅ Demo log loaded: sample_auth.log")
 
 elif uploaded_file:
