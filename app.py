@@ -3,6 +3,8 @@ import pandas as pd
 import re
 from collections import defaultdict
 from datetime import datetime
+from datetime import datetime, timedelta
+
 
 st.set_page_config(page_title="ThreatLens AI", layout="wide")
 
@@ -42,6 +44,20 @@ AUTH_FAIL_KEYWORDS = ["failed password", "invalid password", "login failed", "au
 AUTH_SUCCESS_KEYWORDS = ["accepted password", "login successful", "authenticated", "success login"]
 
 IP_REGEX = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
+TS_REGEX = re.compile(r"(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})")
+
+def extract_timestamp(line: str):
+    """
+    Tries to extract timestamp like: 2026-01-24 22:40:12
+    If not found, returns None.
+    """
+    m = TS_REGEX.search(line)
+    if not m:
+        return None
+    try:
+        return datetime.strptime(m.group(1), "%Y-%m-%d %H:%M:%S")
+    except:
+        return None
 
 
 def extract_ip(line: str):
