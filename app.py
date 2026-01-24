@@ -2,9 +2,7 @@ import streamlit as st
 import pandas as pd
 import re
 from collections import defaultdict
-from datetime import datetime
-from datetime import datetime, timedelta
-
+from datetime import datetime, timedelta  # ✅ ADDED timedelta
 
 st.set_page_config(page_title="ThreatLens AI", layout="wide")
 
@@ -44,12 +42,15 @@ AUTH_FAIL_KEYWORDS = ["failed password", "invalid password", "login failed", "au
 AUTH_SUCCESS_KEYWORDS = ["accepted password", "login successful", "authenticated", "success login"]
 
 IP_REGEX = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
+
+# ✅ ADDED: Timestamp extraction for timeline
 TS_REGEX = re.compile(r"(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})")
+
 
 def extract_timestamp(line: str):
     """
-    Tries to extract timestamp like: 2026-01-24 22:40:12
-    If not found, returns None.
+    Extracts timestamp in format: YYYY-MM-DD HH:MM:SS
+    Returns datetime or None.
     """
     m = TS_REGEX.search(line)
     if not m:
@@ -133,12 +134,14 @@ if log_text:
     # Parse events
     events = []
     for idx, line in enumerate(log_text.splitlines()):
+        ts = extract_timestamp(line)  # ✅ ADDED
         ip = extract_ip(line)
         evt = guess_event_type(line)
         endpoint = find_endpoint(line)
 
         events.append({
             "line_no": idx + 1,
+            "timestamp": ts,  # ✅ ADDED
             "ip": ip,
             "event_type": evt,
             "endpoint": endpoint,
@@ -233,6 +236,25 @@ if log_text:
     st.dataframe(top_ip_df, width="stretch", hide_index=True)
     st.bar_chart(top_ip_df.set_index("ip"))
 
+    # ✅ ADDED: Threat Timeline
+    st.markdown("### ⏳ Threat Timeline")
+
+    if df["timestamp"].notna().sum() == 0:
+        st.info("No timestamps detected in logs, so timeline is hidden. (Tip: include `YYYY-MM-DD HH:MM:SS` in logs)")
+    else:
+        timeline_df = df.dropna(subset=["timestamp"]).copy()
+        timeline_df["minute"] = timeline_df["timestamp"].dt.floor("min")
+
+        event_counts = (
+            timeline_df
+            .groupby(["minute", "event_type"])
+            .size()
+            .reset_index(name="count")
+        )
+
+        pivot = event_counts.pivot(index="minute", columns="event_type", values="count").fillna(0)
+        st.line_chart(pivot)
+
     # Alerts table
     st.markdown('<div id="alerts_section"></div>', unsafe_allow_html=True)
     st.subheader("🚨 Alerts")
@@ -315,6 +337,29 @@ if log_text:
 **Suggested action:** Block/Rate-limit the IP, enable account lockout, monitor additional activity.
 """
             )
+
+        # ✅ ADDED: AI Analyst Summary
+        st.subheader("🤖 AI Analyst Summary")
+
+        top = alert_df.iloc[0]
+        analyst_text = f"""
+**What’s happening:**  
+Most likely **{top['type']}** activity was detected, mainly from IP **{top['ip']}**.
+
+**Why this matters:**  
+{top['evidence']} (Risk Score: **{top['score']}**)
+
+**Most recommended action (next 10 mins):**
+- Block or rate-limit the IP `{top['ip']}`
+- Enable account lockout + CAPTCHA on login
+- Monitor for further attempts or suspicious endpoints
+
+**What to check next:**
+- Look for multiple failed logins across many users
+- Check if any successful login happened after failures
+- Review access logs for admin endpoint hits
+"""
+        st.markdown(analyst_text)
 
         # -----------------------------
         # Report Download (Markdown)
