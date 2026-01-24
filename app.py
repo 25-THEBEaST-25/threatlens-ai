@@ -2,8 +2,11 @@ import streamlit as st
 import pandas as pd
 import re
 from collections import defaultdict
-from datetime import datetime, timedelta  # ✅ ADDED timedelta
+from datetime import datetime
+from openai import OpenAI
 
+# -----------------------------
+# Config
 st.set_page_config(page_title="ThreatLens AI", layout="wide")
 
 col1, col2 = st.columns([1, 1])
@@ -14,7 +17,7 @@ with col1:
 with col2:
     reset_clicked = st.button("🧹 Reset / Clear")
 
-# ✅ Sidebar Demo Mode Button (NEW)
+# ✅ Sidebar Demo Mode Button
 st.sidebar.markdown("## 🚀 Quick Demo")
 demo_mode = st.sidebar.button("▶️ Run Demo Mode")
 
@@ -43,7 +46,7 @@ AUTH_SUCCESS_KEYWORDS = ["accepted password", "login successful", "authenticated
 
 IP_REGEX = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
 
-# ✅ ADDED: Timestamp extraction for timeline
+# ✅ Timestamp extraction for timeline
 TS_REGEX = re.compile(r"(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})")
 
 
@@ -101,6 +104,74 @@ def risk_color(label: str):
     return {"HIGH": "🔴", "MEDIUM": "🟠", "LOW": "🟢"}.get(label, "⚪")
 
 
+def generate_ai_report(alert_df, df):
+    api_key = st.secrets.get("OPENAI_API_KEY")
+
+    if not api_key:
+        return "❌ OPENAI_API_KEY not found in Streamlit secrets."
+
+    client = OpenAI(api_key=api_key)
+
+    # Basic stats
+    total_lines = len(df)
+    auth_fails = int((df["event_type"] == "AUTH_FAIL").sum())
+    auth_success = int((df["event_type"] == "AUTH_SUCCESS").sum())
+    unique_ips = int(df["ip"].nunique(dropna=True))
+
+    # Top IPs
+    top_ips = df["ip"].dropna().value_counts().head(5)
+    top_ips_text = "\n".join([f"- {ip}: {cnt} events" for ip, cnt in top_ips.items()]) or "N/A"
+
+    # Alerts
+    if alert_df is not None and not alert_df.empty:
+        alerts_text = "\n".join([
+            f"- [{row['risk']}] {row['type']} | IP={row['ip']} | score={row['score']} | evidence={row['evidence']}"
+            for _, row in alert_df.iterrows()
+        ])
+    else:
+        alerts_text = "No alerts detected by rules."
+
+    prompt = f"""
+You are a professional SOC Analyst.
+
+Based on the data below, generate a clear incident report.
+Be concise but actionable.
+
+LOG OVERVIEW:
+- Total lines: {total_lines}
+- Auth fails: {auth_fails}
+- Auth success: {auth_success}
+- Unique IPs: {unique_ips}
+
+TOP IPs:
+{top_ips_text}
+
+ALERTS DETECTED:
+{alerts_text}
+
+Return in this structure:
+## Executive Summary
+## Key Findings
+## Most Suspicious IPs
+## Immediate Actions (next 30 minutes)
+## Hardening / Prevention Checklist
+"""
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are a cybersecurity incident response assistant."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.3,
+        )
+        return response.choices[0].message.content
+
+    except Exception as e:
+        return f"⚠️ AI Report failed due to API issue:\n\n`{e}`\n\n✅ Your ThreatLens rules & dashboard still work perfectly."
+
+
 # -----------------------------
 # UI
 # -----------------------------
@@ -108,11 +179,11 @@ uploaded_file = st.file_uploader("Upload a log file (.log / .txt)", type=["log",
 
 log_text = None
 
-# ✅ FIX: Keep the uploaded/demo log persistent even after reruns
+# ✅ Keep the uploaded/demo log persistent even after reruns
 if "log_text" in st.session_state:
     log_text = st.session_state["log_text"]
 
-# ✅ Demo load function (same file for both demo buttons)
+
 def load_demo_log():
     with open("sample_auth.log", "r", encoding="utf-8", errors="ignore") as f:
         demo_text = f.read()
@@ -120,7 +191,6 @@ def load_demo_log():
     return demo_text
 
 
-# ✅ If any demo button is clicked → load demo log
 if demo_clicked or demo_mode:
     log_text = load_demo_log()
     st.info("✅ Demo log loaded: sample_auth.log")
@@ -134,14 +204,14 @@ if log_text:
     # Parse events
     events = []
     for idx, line in enumerate(log_text.splitlines()):
-        ts = extract_timestamp(line)  # ✅ ADDED
+        ts = extract_timestamp(line)
         ip = extract_ip(line)
         evt = guess_event_type(line)
         endpoint = find_endpoint(line)
 
         events.append({
             "line_no": idx + 1,
-            "timestamp": ts,  # ✅ ADDED
+            "timestamp": ts,
             "ip": ip,
             "event_type": evt,
             "endpoint": endpoint,
@@ -155,7 +225,7 @@ if log_text:
     # -----------------------------
     alerts = []
 
-    # Rule 1: Brute force (many AUTH_FAIL from same IP)
+    # Rule 1: Brute force
     fail_df = df[df["event_type"] == "AUTH_FAIL"].copy()
     if not fail_df.empty:
         fail_counts = fail_df["ip"].value_counts(dropna=True)
@@ -169,7 +239,7 @@ if log_text:
                     "score": score
                 })
 
-    # Rule 2: Credential stuffing (same IP tries multiple usernames)
+    # Rule 2: Credential stuffing
     def extract_username(line: str):
         low = line.lower()
         m1 = re.search(r"user=([a-zA-Z0-9_.-]+)", low)
@@ -214,7 +284,7 @@ if log_text:
                     })
 
     # -----------------------------
-    # Quick Stats (Overview)
+    # Overview
     # -----------------------------
     st.subheader("📊 Overview")
 
@@ -236,7 +306,7 @@ if log_text:
     st.dataframe(top_ip_df, width="stretch", hide_index=True)
     st.bar_chart(top_ip_df.set_index("ip"))
 
-    # ✅ ADDED: Threat Timeline
+    # Timeline
     st.markdown("### ⏳ Threat Timeline")
 
     if df["timestamp"].notna().sum() == 0:
@@ -255,23 +325,24 @@ if log_text:
         pivot = event_counts.pivot(index="minute", columns="event_type", values="count").fillna(0)
         st.line_chart(pivot)
 
-    # Alerts table
+    # Alerts
     st.markdown('<div id="alerts_section"></div>', unsafe_allow_html=True)
     st.subheader("🚨 Alerts")
 
     if not alerts:
         st.success("✅ No high-confidence threats detected (based on current rules).")
+
     else:
         alert_df = pd.DataFrame(alerts)
+
         alert_df["risk"] = alert_df["score"].apply(risk_label)
-        alert_df["risk_badge"] = alert_df["risk"].apply(risk_color) + " " + alert_df["risk"]
+        alert_df["risk_badge"] = alert_df["risk"].apply(risk_color) + " " + alert_df["risk"].astype(str)
+
 
         # Sort by score high -> low
         alert_df = alert_df.sort_values(by="score", ascending=False)
 
-        # -----------------------------
-        # Sidebar Filters
-        # -----------------------------
+        # Sidebar filters
         st.sidebar.header("🔎 Filters")
 
         risk_options = ["ALL"] + sorted(alert_df["risk"].unique().tolist())
@@ -280,16 +351,6 @@ if log_text:
         unique_ips = sorted(alert_df["ip"].unique().tolist())
         ip_options = ["ALL"] + unique_ips
         selected_ip = st.sidebar.selectbox("IP Address", ip_options, key="ip_filter")
-
-        st.markdown(
-            """
-            <script>
-            const el = window.parent.document.getElementById("alerts_section");
-            if (el) el.scrollIntoView({behavior: "smooth"});
-            </script>
-            """,
-            unsafe_allow_html=True
-        )
 
         filtered_alerts = alert_df.copy()
 
@@ -310,9 +371,7 @@ if log_text:
             hide_index=True
         )
 
-        # -----------------------------
-        # AI-style Explanation + Copy
-        # -----------------------------
+        # AI-style Explanation
         st.subheader("🧠 AI-style Explanation (MVP)")
 
         summary_text = "\n".join([
@@ -338,7 +397,7 @@ if log_text:
 """
             )
 
-        # ✅ ADDED: AI Analyst Summary
+        # AI Analyst Summary
         st.subheader("🤖 AI Analyst Summary")
 
         top = alert_df.iloc[0]
@@ -361,9 +420,23 @@ Most likely **{top['type']}** activity was detected, mainly from IP **{top['ip']
 """
         st.markdown(analyst_text)
 
-        # -----------------------------
+        # ✅ OpenAI Incident Report (REAL AI)
+        st.subheader("🧨 AI Incident Report (OpenAI)")
+
+        if st.button("🤖 Generate AI Report"):
+            with st.spinner("Generating AI report..."):
+                ai_report = generate_ai_report(alert_df, df)
+
+            st.markdown(ai_report)
+
+            st.download_button(
+                label="⬇️ Download AI Report (.md)",
+                data=ai_report,
+                file_name="threatlens_ai_report.md",
+                mime="text/markdown"
+            )
+
         # Report Download (Markdown)
-        # -----------------------------
         st.subheader("📥 Download Incident Report")
 
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
