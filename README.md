@@ -222,13 +222,13 @@ Monitor further activity
 
 ## Threat Detection & Alert Analysis
 
-![Threat Detection](assets/screenshots/threat-detection.png)
+![Threat Detection](assets/screenshots/threat-analysis.png)
 
 ---
 
 ## AI Analysis & Incident Reporting
 
-![Risk Analysis](assets/screenshots/risk-analysis.png)
+![Risk Analysis](assets/screenshots/risk-detection.png)
 
 ---
 
