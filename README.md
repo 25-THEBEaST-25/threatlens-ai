@@ -1,56 +1,299 @@
-# ThreatLens AI
+# 🛡️ ThreatLens AI
 
-ThreatLens AI is a Streamlit cybersecurity investigation assistant. It parses SSH/syslog, nginx/apache-style access logs, ISO timestamp text logs, and line-delimited JSON events, then turns detections into an attack story, analyst commands, reports, and a lightweight case workflow.
+![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)
+![Streamlit](https://img.shields.io/badge/Streamlit-App-FF4B4B?logo=streamlit)
+![OpenAI](https://img.shields.io/badge/OpenAI-GPT--Powered-10A37F?logo=openai)
+![Cybersecurity](https://img.shields.io/badge/Domain-Cybersecurity-red)
+![Threat%20Intelligence](https://img.shields.io/badge/Threat%20Intel-AbuseIPDB-orange)
+![License](https://img.shields.io/badge/License-MIT-green)
+![Status](https://img.shields.io/badge/Status-Active%20Development-brightgreen)
+![Platform](https://img.shields.io/badge/Platform-Cross--Platform-lightgrey)
 
-## What Makes It Different
+An AI-powered cybersecurity investigation assistant that transforms raw security logs into actionable incident investigations, attack narratives, analyst recommendations, and downloadable case reports.
 
-- **Attack Story Mode:** converts scattered events into a readable investigation narrative.
-- **SOC command helper:** suggests grep, journalctl, and login-history commands for the suspicious IPs.
-- **Case workflow:** tracks owner, status, notes, highest risk, and downloadable case files.
-- **Threat intel layer:** enriches alerts with local behavioral tags and optional AbuseIPDB lookups.
-- **False positive controls:** allowlist known IPs, internal networks, and trusted user agents.
+---
 
-## Detection Coverage
+# 📖 Overview
 
-- Brute force authentication attempts
-- Credential stuffing across many usernames
-- Successful login after repeated failures
-- Suspicious endpoint probing for admin/config/traversal paths
-- Scanner-like user-agent and endpoint-spread hints
+ThreatLens AI is designed to simplify security investigations by automatically parsing multiple log formats, detecting malicious activities, enriching findings with threat intelligence, and generating AI-assisted investigation reports.
 
-## Run Locally
+Instead of presenting isolated alerts, ThreatLens AI reconstructs the complete attack timeline, helping analysts understand what happened, why it happened, and what actions should be taken next.
+
+---
+
+# ✨ Features
+
+- 📂 Multi-format log ingestion
+- 🔍 Automated threat detection
+- 🤖 AI-generated attack narratives
+- 📊 Interactive SOC dashboard
+- 🛡️ Threat intelligence enrichment
+- 📄 Incident report generation
+- 📋 Case management workflow
+- 💻 Analyst command suggestions
+- ⚙️ False positive reduction using allowlists
+- 📥 Downloadable investigation reports
+
+---
+
+# 🚀 What Makes ThreatLens AI Different
+
+### 🧠 Attack Story Mode
+
+Transforms scattered log events into a chronological attack narrative for easier investigations.
+
+---
+
+### 🛠️ SOC Command Assistant
+
+Suggests Linux investigation commands such as:
+
+- grep
+- journalctl
+- last
+- lastb
+- who
+- netstat
+- ss
+
+to help analysts validate suspicious activity.
+
+---
+
+### 📂 Case Workflow
+
+Track investigations with:
+
+- Case Owner
+- Investigation Status
+- Analyst Notes
+- Risk Score
+- Downloadable Case Reports
+
+---
+
+### 🌍 Threat Intelligence Layer
+
+Supports:
+
+- Local behavioral enrichment
+- Optional AbuseIPDB lookups
+- Reputation-based scoring
+
+---
+
+### 🎯 False Positive Controls
+
+Reduce noisy alerts using:
+
+- Trusted IP allowlists
+- Internal network exclusions
+- Trusted User-Agent filtering
+
+---
+
+# 🔎 Detection Coverage
+
+| Threat | Detection |
+|----------|:---------:|
+| Brute Force Authentication | ✅ |
+| Credential Stuffing | ✅ |
+| Successful Login After Failures | ✅ |
+| Admin Endpoint Probing | ✅ |
+| Directory Traversal Attempts | ✅ |
+| Scanner User Agents | ✅ |
+| Suspicious Endpoint Enumeration | ✅ |
+| Threat Intelligence Enrichment | ✅ |
+
+---
+
+# 🏗️ Architecture
+
+```text
+                    Security Logs
+                           │
+                           ▼
+                 Log Parsing Engine
+                           │
+                           ▼
+                  Detection Pipeline
+        ┌──────────────────────────────────┐
+        │ Brute Force Detection            │
+        │ Credential Stuffing              │
+        │ Endpoint Probing                 │
+        │ Scanner Detection                │
+        └──────────────────────────────────┘
+                           │
+                           ▼
+             Threat Intelligence Layer
+           (Behavior + AbuseIPDB Lookup)
+                           │
+                           ▼
+               AI Investigation Engine
+                           │
+            ┌──────────────┴──────────────┐
+            ▼                             ▼
+     Attack Story                 Analyst Commands
+            │                             │
+            └──────────────┬──────────────┘
+                           ▼
+                  Incident Report Generator
+                           │
+                           ▼
+                 Streamlit Investigation UI
+```
+
+---
+
+# 🛠️ Tech Stack
+
+| Category | Technology |
+|------------|------------|
+| Language | Python |
+| Framework | Streamlit |
+| AI | OpenAI GPT |
+| Data Processing | Pandas |
+| Threat Intelligence | AbuseIPDB |
+| Visualization | Plotly |
+| Testing | unittest |
+
+---
+
+# 📁 Project Structure
+
+```text
+ThreatLens-AI/
+
+├── app.py
+├── modules/
+│   ├── parser.py
+│   ├── detector.py
+│   ├── attack_story.py
+│   ├── analyst.py
+│   ├── abuseipdb.py
+│   ├── reports.py
+│   └── case_manager.py
+│
+├── tests/
+├── sample_logs/
+├── assets/
+├── requirements.txt
+└── README.md
+```
+
+---
+
+# ⚡ Run Locally
 
 ```bash
+git clone https://github.com/25-THEBeaST-25/threatlens-ai.git
+
+cd threatlens-ai
+
 python3 -m venv .venv
+
 source .venv/bin/activate
+
 python -m pip install -r requirements.txt
+
 python -m streamlit run app.py
 ```
 
-## Optional Integrations
+---
 
-### OpenAI Analyst Report
+# 🤖 OpenAI Integration
 
-Add your OpenAI key to Streamlit secrets:
+ThreatLens AI can generate AI-powered investigation reports.
+
+Configure Streamlit secrets:
 
 ```toml
-OPENAI_API_KEY = "your-key"
+OPENAI_API_KEY="your-api-key"
 ```
 
-### AbuseIPDB Enrichment
+---
 
-Enable **Use AbuseIPDB API** in the sidebar and paste your AbuseIPDB key. If no key is provided, ThreatLens still performs local enrichment without network calls.
+# 🌍 AbuseIPDB Integration
 
-## Test
+Enable **Use AbuseIPDB API** from the sidebar.
+
+Paste your API key when prompted.
+
+If no API key is supplied, ThreatLens AI automatically falls back to local behavioral enrichment.
+
+---
+
+# 🧪 Running Tests
 
 ```bash
 python -m unittest discover -s tests
 ```
 
-## Production Notes
+---
 
-- Tune thresholds before using results for automated blocking.
-- Keep internal ranges, scanner IPs, uptime bots, and monitoring user agents in allowlists.
-- Do not upload logs containing passwords, tokens, API keys, or private customer data.
-- Store API keys in Streamlit secrets or your hosting provider's secret manager.
+# 📊 Example Workflow
 
+```text
+Upload Logs
+      │
+      ▼
+Automatic Parsing
+      │
+      ▼
+Threat Detection
+      │
+      ▼
+Threat Intelligence
+      │
+      ▼
+AI Investigation
+      │
+      ▼
+Attack Story
+      │
+      ▼
+Incident Report
+      │
+      ▼
+Case Dashboard
+```
+
+---
+
+# 📈 Roadmap
+
+- [x] Multi-format log parser
+- [x] Brute force detection
+- [x] Credential stuffing detection
+- [x] AI attack narratives
+- [x] Threat intelligence enrichment
+- [x] Case workflow
+- [x] Analyst command suggestions
+- [ ] MITRE ATT&CK mapping
+- [ ] Sigma Rule generation
+- [ ] Docker support
+- [ ] SIEM connectors
+- [ ] Real-time log monitoring
+
+---
+
+# 🔒 Security Notes
+
+- Tune detection thresholds before automated blocking.
+- Maintain allowlists for trusted infrastructure.
+- Never upload logs containing passwords, tokens, API keys, or confidential customer data.
+- Store API keys using Streamlit Secrets or your deployment platform's secret manager.
+
+---
+
+# 👨‍💻 Author
+
+**Aryan Wesavkar**
+
+Cybersecurity • AI • Backend Development
+
+---
+
+# 📄 License
+
+Licensed under the MIT License.
