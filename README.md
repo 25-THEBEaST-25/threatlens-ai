@@ -178,6 +178,10 @@ ThreatLens-AI/
 ├── sample_logs/
 ├── assets/
 ├── requirements.txt
+├── requirements-dev.txt
+├── .env.example
+├── .streamlit/secrets.toml.example
+├── Dockerfile
 └── README.md
 ```
 
@@ -198,6 +202,38 @@ python -m pip install -r requirements.txt
 
 python -m streamlit run app.py
 ```
+
+---
+
+# 🐳 Run with Docker
+
+```bash
+# Build the image
+docker build -t threatlens-ai .
+
+# Run (no API keys — local detection only)
+docker run -p 8501:8501 threatlens-ai
+
+# Run with optional threat-intel keys
+docker run -p 8501:8501 \
+  -e VT_API_KEY=your_vt_key \
+  -e ABUSEIPDB_API_KEY=your_abuseipdb_key \
+  threatlens-ai
+```
+
+Open http://localhost:8501 in your browser.
+
+---
+
+# ⚙️ Configuration
+
+| Variable | Where | Purpose |
+|---|---|---|
+| `OPENAI_API_KEY` | `.streamlit/secrets.toml` | AI report generation |
+| `VT_API_KEY` | `.env` or env var | VirusTotal enrichment (optional) |
+| `ABUSEIPDB_API_KEY` | `.env` or env var | IP reputation lookups (optional) |
+
+Copy `.env.example` → `.env` and `.streamlit/secrets.toml.example` → `.streamlit/secrets.toml`, then fill in the keys you need. The app runs fully without any keys configured (local behavioural detection only).
 
 ---
 
@@ -271,7 +307,7 @@ Case Dashboard
 - [x] Analyst command suggestions
 - [ ] MITRE ATT&CK mapping
 - [ ] Sigma Rule generation
-- [ ] Docker support
+- [x] Docker support
 - [ ] SIEM connectors
 - [ ] Real-time log monitoring
 
