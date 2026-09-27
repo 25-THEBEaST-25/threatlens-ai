@@ -21,6 +21,14 @@ Instead of presenting isolated alerts, ThreatLens AI reconstructs the complete a
 
 ---
 
+# 🖼️ Screenshots
+
+| Timeline Dashboard | MITRE + GeoIP Alerts | IOC Extraction |
+|---|---|---|
+| ![Timeline Dashboard](docs/screenshots/timeline-dashboard.png) | ![MITRE and GeoIP Alerts](docs/screenshots/mitre-geoip-alerts.png) | ![IOC Extraction](docs/screenshots/ioc-extraction.png) |
+
+---
+
 # ✨ Features
 
 - 📂 Multi-format log ingestion
@@ -89,6 +97,21 @@ Reduce noisy alerts using:
 - Trusted IP allowlists
 - Internal network exclusions
 - Trusted User-Agent filtering
+
+---
+
+# 📥 Supported Log Formats
+
+ThreatLens AI auto-detects the format of each line as it parses a log, so mixed-format files work out of the box:
+
+| Format | Example Source |
+|---|---|
+| JSON (structured) | Cloud/app JSON event logs |
+| Syslog / SSH auth | `/var/log/auth.log`, `sshd` |
+| Web access (Nginx/Apache) | Combined/common log format |
+| ISO-timestamped text | Generic timestamped app logs |
+
+Sample logs are included in the repo root (`sample_auth.log`, `demo_bruteforce.log`, `demo_endpoint_probe.log`) — upload them in the UI to try the app immediately.
 
 ---
 
@@ -162,21 +185,30 @@ Reduce noisy alerts using:
 # 📁 Project Structure
 
 ```text
-ThreatLens-AI/
+threatlens-ai/
 
-├── app.py
-├── modules/
-│   ├── parser.py
-│   ├── detector.py
-│   ├── attack_story.py
-│   ├── analyst.py
-│   ├── abuseipdb.py
-│   ├── reports.py
-│   └── case_manager.py
+├── app.py                  # Streamlit UI and app entry point
+├── src/
+│   ├── config.py            # Detection thresholds and settings
+│   ├── utils.py              # Log parsing helpers
+│   ├── detectors.py          # Brute force / credential stuffing / probing detection
+│   ├── ioc.py                 # IOC extraction (IPs, hashes, URLs, etc.)
+│   ├── intelligence.py     # MITRE ATT&CK mapping + alert enrichment
+│   ├── geoip.py               # GeoIP lookups
+│   ├── reputation.py       # IP reputation scoring / AbuseIPDB
+│   ├── story.py                # AI attack narrative generation
+│   ├── reports.py            # Downloadable case report generation
+│   ├── cases.py                # Case management workflow
+│   └── monitor.py            # Real-time monitoring helpers
 │
 ├── tests/
-├── sample_logs/
+│   └── test_detection.py
+├── docs/
+│   └── screenshots/
 ├── assets/
+├── sample_auth.log           # Example SSH auth log
+├── demo_bruteforce.log       # Example brute-force demo log
+├── demo_endpoint_probe.log   # Example endpoint-probing demo log
 ├── requirements.txt
 ├── requirements-dev.txt
 ├── .env.example
@@ -305,9 +337,11 @@ Case Dashboard
 - [x] Threat intelligence enrichment
 - [x] Case workflow
 - [x] Analyst command suggestions
-- [ ] MITRE ATT&CK mapping
-- [ ] Sigma Rule generation
+- [x] MITRE ATT&CK mapping
+- [x] IOC extraction (IPs, hashes, URLs, domains)
+- [x] GeoIP enrichment
 - [x] Docker support
+- [ ] Sigma Rule generation
 - [ ] SIEM connectors
 - [ ] Real-time log monitoring
 
