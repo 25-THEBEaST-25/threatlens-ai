@@ -27,7 +27,6 @@ jobs:
 
       - name: Lint with ruff
         run: python -m ruff check . --output-format=github
-        continue-on-error: true
 
       - name: Compile-check all Python modules
         run: python -m compileall -q src app.py

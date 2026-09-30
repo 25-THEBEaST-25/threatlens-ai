@@ -1,0 +1,8 @@
+[lint]
+# Log timestamps come from sources that carry no timezone (syslog, auth.log),
+# so naive datetimes are intentional; making them aware would change comparisons.
+ignore = ["DTZ005", "DTZ007"]
+
+[lint.per-file-ignores]
+# Readable multi-line fixtures beat f-string joins in tests.
+"tests/*" = ["FLY002"]

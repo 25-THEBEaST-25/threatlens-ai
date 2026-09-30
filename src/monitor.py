@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import time
 from collections import deque
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Iterator
 
 
 def read_live_log(path: str | Path, max_lines: int = 1000) -> str:

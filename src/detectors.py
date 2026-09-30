@@ -3,7 +3,11 @@ from __future__ import annotations
 import pandas as pd
 
 from .config import DetectionSettings, is_allowlisted_ip, is_trusted_user_agent
-from .intelligence import attach_mitre_metadata, confidence_label, confidence_score_for_label
+from .intelligence import (
+    attach_mitre_metadata,
+    confidence_label,
+    confidence_score_for_label,
+)
 from .utils import is_suspicious_endpoint, parse_log_text, risk_label
 
 
@@ -138,7 +142,7 @@ def _detect_success_after_failures(df: pd.DataFrame, threshold: int) -> list[dic
                     "type": "Successful Login After Failures",
                     "ip": ip,
                     "evidence": f"{len(prior_failures)} failures were followed by a successful login as {username}",
-                    "score": min(100, 70 + int(len(prior_failures)) * 3),
+                    "score": min(100, 70 + len(prior_failures) * 3),
                     "confidence_score": 93,
                     "confidence": "High",
                     "attack_stage": "Initial Access",

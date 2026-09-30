@@ -4,7 +4,6 @@ from datetime import datetime
 
 import pandas as pd
 
-
 CASE_STATUSES = ("Open", "Investigating", "Contained", "Resolved", "False Positive")
 
 
@@ -21,7 +20,7 @@ def build_case_summary(alert_df: pd.DataFrame, status: str, owner: str, notes: s
         "owner": owner or "Unassigned",
         "highest_risk": highest_risk,
         "top_ip": top_ip,
-        "alert_count": int(len(alert_df)),
+        "alert_count": len(alert_df),
         "notes": notes.strip(),
         "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
     }
