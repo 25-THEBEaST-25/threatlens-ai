@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import re
 import json
+import re
 from datetime import datetime
 from ipaddress import ip_address
 from pathlib import Path
 
 import pandas as pd
-
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 

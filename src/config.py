@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from ipaddress import ip_address, ip_network
 
-
 DEFAULT_INTERNAL_NETWORKS = (
     "10.0.0.0/8",
     "172.16.0.0/12",
@@ -25,7 +24,7 @@ class DetectionSettings:
 
 def parse_csv_values(value: str | None) -> tuple[str, ...]:
     if not value:
-        return tuple()
+        return ()
     return tuple(item.strip() for item in value.split(",") if item.strip())
 
 

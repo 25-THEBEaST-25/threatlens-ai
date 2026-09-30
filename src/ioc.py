@@ -5,7 +5,6 @@ from ipaddress import ip_address
 
 import pandas as pd
 
-
 IP_REGEX = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
 URL_REGEX = re.compile(r"\bhttps?://[^\s\"'<>]+", re.IGNORECASE)
 ENDPOINT_REGEX = re.compile(r"\b(?:GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS)\s+([^\s\"']+)", re.IGNORECASE)

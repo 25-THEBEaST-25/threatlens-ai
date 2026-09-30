@@ -1,9 +1,9 @@
 import unittest
 
-from src.detectors import detect_threats
 from src.config import DetectionSettings
-from src.ioc import extract_iocs, summarize_ioc_counts
+from src.detectors import detect_threats
 from src.intelligence import enrich_alerts
+from src.ioc import extract_iocs, summarize_ioc_counts
 from src.reports import build_json_report
 from src.story import build_attack_story
 from src.utils import extract_ip, parse_log_text

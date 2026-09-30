@@ -22,11 +22,15 @@ except ImportError:  # pragma: no cover
 from src.cases import CASE_STATUSES, build_case_summary, render_case_markdown
 from src.config import DetectionSettings, parse_csv_values
 from src.detectors import detect_threats
-from src.ioc import extract_iocs, summarize_ioc_counts
 from src.intelligence import ThreatIntelSettings, enrich_alerts
+from src.ioc import extract_iocs, summarize_ioc_counts
 from src.monitor import read_live_log
 from src.reports import build_html_report, build_json_report, build_markdown_report
-from src.story import build_attack_story, build_investigation_commands, build_prevention_checklist
+from src.story import (
+    build_attack_story,
+    build_investigation_commands,
+    build_prevention_checklist,
+)
 from src.utils import PROJECT_ROOT, load_text_file, parse_log_text, top_ip_counts
 
 try:
@@ -514,8 +518,8 @@ def render_reports(alert_df: pd.DataFrame, df: pd.DataFrame, top_ip_df: pd.DataF
     markdown_report = build_markdown_report(alert_df, total_events=len(df))
     ioc_counts = summarize_ioc_counts(ioc_df)
     summary_data = {
-        "total_events": int(len(df)),
-        "total_alerts": int(len(alert_df)),
+        "total_events": len(df),
+        "total_alerts": len(alert_df),
         "high_risk_alerts": int((alert_df["risk"] == "HIGH").sum()) if not alert_df.empty else 0,
         "unique_ips": ioc_counts["Unique IPs"],
         "endpoints": ioc_counts["Endpoints"],
@@ -598,7 +602,7 @@ Return sections for Executive Summary, Key Findings, Attack Narrative, Most Susp
             temperature=0.3,
         )
         return response.choices[0].message.content or "No AI response was returned."
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 - surface any provider error in the UI
         return f"AI report generation failed: {exc}"
 
 

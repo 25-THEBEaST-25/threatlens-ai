@@ -9,7 +9,6 @@ from .geoip import lookup_geoip
 from .reputation import lookup_abuseipdb as reputation_lookup_abuseipdb
 from .reputation import lookup_virustotal_ip
 
-
 RESERVED_DOC_IPS = ("192.0.2.", "198.51.100.", "203.0.113.")
 COMMON_SCANNER_UA_HINTS = ("nikto", "sqlmap", "nmap", "acunetix", "nessus", "masscan", "gobuster", "dirbuster")
 
